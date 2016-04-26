@@ -124,7 +124,9 @@ void QWsSocket::connectToHost(const QString& hostName, quint16 port, OpenMode mo
 	if (_hostName.startsWith("wss://", Qt::CaseInsensitive))
 	{
 		_secured = true;
-	}
+    }else{
+        _secured = false;
+    }
 
 	// remove the websocket URI scheme for TCP connection
 	_host = QString(_hostName).remove(regExpUriStart);
@@ -144,7 +146,7 @@ void QWsSocket::connectToHost(const QString& hostName, quint16 port, OpenMode mo
 	// from hostName
 	else
 	{
-		QHostInfo info = QHostInfo::fromName(_host);
+        QHostInfo info = QHostInfo::fromName(_host);
 		QList<QHostAddress> hostAddresses = info.addresses();
 		if (hostAddresses.size())
 		{
@@ -170,15 +172,16 @@ void QWsSocket::connectToHost(const QString& hostName, quint16 port, OpenMode mo
 		if (!file.open(QIODevice::ReadOnly))
 		{
 			std::cout << "cant load client key" << std::endl;
-			return;
+			//return;
+		}else{
+			QSslKey key(&file, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, QByteArray("qtwebsocket-client-key"));
+			file.close();
+			sslSocket->setPrivateKey(key);
 		}
-		QSslKey key(&file, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, QByteArray("qtwebsocket-client-key"));
-		file.close();
-		sslSocket->setPrivateKey(key);
-		sslSocket->setLocalCertificate("client-crt.pem");
-		if (!sslSocket->addCaCertificates("ca.pem"))
+        sslSocket->setLocalCertificate("client-crt.pem");
+        if (!sslSocket->addCaCertificates("../../utils/ca/ca.pem"))
 		{
-			std::cout << "cant open ca certificate" << std::endl;
+            std::cout << "QWsSocket:: cant open ca certificate" << std::endl;
 			return;
 		}
 		sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -717,7 +720,8 @@ void QWsSocket::startHandshake()
 	if (_version == WS_V13)
 	{
 		key = QWsSocket::generateNonce();
-		QString handshake = composeOpeningHandShakeV13("/", _host, key);
+        QString handshake = composeOpeningHandShakeV13(_resourceName, _host, key, _origin,
+                                                       _protocol, _extensions);
 		tcpSocket->write(handshake.toUtf8());
 	}
 	else if (_version == WS_V0)
@@ -1059,24 +1063,25 @@ QByteArray QWsSocket::composeHeader(bool end, Opcode opcode, quint64 payloadLeng
 QString QWsSocket::composeOpeningHandShakeV13(QString resourceName, QString host, QByteArray key, QString origin, QString protocol, QString extensions)
 {
 	QString hs;
-	hs += QString("GET %1%2 HTTP/1.1\r\n").arg(resourceName).arg(resourceName.endsWith('/') ? "" : "/");
+    QString tmpResource = resourceName.isEmpty() ? "/" : resourceName;
+    hs += QString("GET ")+tmpResource+" HTTP/1.1\r\n";
 	hs += QString("Host: %1\r\n").arg(host);
-	hs += QLatin1String("Upgrade: websocket\r\n");
-	hs += QLatin1String("Connection: Upgrade\r\n");
-	hs += QString("Sec-WebSocket-Key: %1\r\n").arg(QLatin1String(key));
-	hs += QLatin1String("Sec-WebSocket-Version: 13\r\n");
+    hs += QLatin1String("Upgrade: websocket\r\n");
+    hs += QLatin1String("Connection: Upgrade\r\n");
+	hs += QString("Sec-WebSocket-Key: %1\r\n").arg(QLatin1String(key));    
+    hs += QLatin1String("Sec-WebSocket-Version: 13\r\n");
 	if (!origin.isEmpty())
-	{
-		hs += QString("Origin: %1\r\n").arg(origin);
-	}
+    {
+        hs += QString("Origin: %1\r\n").arg(origin);
+    }
 	if (!protocol.isEmpty())
 	{
 		hs += QString("Sec-WebSocket-Protocol: %1\r\n").arg(protocol);
 	}
 	if (!extensions.isEmpty())
-	{
-		hs += QString("Sec-WebSocket-Extensions: %1\r\n").arg(extensions);
-	}
+    {
+        hs += QString("Sec-WebSocket-Extensions: %1\r\n").arg(extensions);
+    }
 	hs += QLatin1String("\r\n");
 	return hs;
 }
