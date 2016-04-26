@@ -20,6 +20,7 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef QTLSSERVER_H
 #define QTLSSERVER_H
 
+#include <QtGlobal>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSsl>
@@ -60,7 +61,7 @@ signals:
 	void newTlsConnection(QSslSocket* serverSocket);
 
 protected:
-	virtual void incomingConnection(qintptr socketDescriptor);
+    virtual void incomingConnection(int socketDescriptor);
 	const Protocol _allowedProtocols;
 };
 

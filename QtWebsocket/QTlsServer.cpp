@@ -62,7 +62,7 @@ void QTlsServer::tlsSocketEncrypted()
 	QSslSocket* serverSocket = qobject_cast<QSslSocket*>(sender());
 	emit newTlsConnection(serverSocket);
 }
-void QTlsServer::incomingConnection(qintptr socketDescriptor)
+void QTlsServer::incomingConnection(int socketDescriptor)
 {
 	QSslSocket* serverSocket = new QSslSocket;
 	QObject::connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), this, SLOT(displayTlsErrors(const QList<QSslError>&)));
