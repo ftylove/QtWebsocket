@@ -79,26 +79,36 @@ void Client::displaySslErrors(const QList<QSslError>& errors)
 
 void Client::connectSocket()
 {
-	bool ok;
-	QString ipAddress = QInputDialog::getText(this, tr("Client"), tr("Server IP:"), QLineEdit::Normal, "ws://localhost:80", &ok);
-	ipAddress = ipAddress.trimmed();
-	if (ok && !ipAddress.isEmpty())
-	{
-		QString ip;
-		quint16 port;
-		if (ipAddress.contains(QRegExp(QLatin1String(":([0-9]|[1-9][0-9]{1,3}|[1-5][0-9]{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$"))))
-		{
-			QStringList splitted = ipAddress.split(':');
-			port = splitted.takeLast().toUInt();
-			ip = splitted.join(':');
-		}
-		else
-		{
-			ip = ipAddress;
-			port = 80;
-		}
-		wsSocket->connectToHost(ip.toUtf8(), port);
-	}
+    dialog = new MultiInputDialog(this,tr("Client"));
+    connect(dialog,SIGNAL(accepted()),this,SLOT(connectAccepted()));
+    dialog->addRow(tr("Server IP:"), QLineEdit::Normal, "wss://echo.websocket.org");
+    dialog->addRow(tr("Protocol:"), QLineEdit::Normal, "");
+    dialog->exec();
+}
+
+void Client::connectAccepted(){
+    if(!dialog)
+        return;
+
+    QList<QLineEdit*> fields = dialog->getFields();
+    QString ipAddress = fields.at(0)->text();
+    QString protocol = fields.at(1)->text();
+
+    ipAddress = ipAddress.trimmed();
+    if (!ipAddress.isEmpty())
+    {
+        QUrl url(ipAddress);
+        QString host = url.scheme()+"://"+url.host();
+        quint16 port = url.port()!=-1 ? url.port() :
+                                        url.scheme()=="wss" ? 443 : 80;
+        int resModLen = url.port()!=-1 ? QString::number(url.port()).length()+1 : 0;
+        QString resource = ipAddress.right(ipAddress.length()-host.length()-resModLen);
+        wsSocket->setProtocol(protocol);
+        wsSocket->setResourceName(resource);
+        wsSocket->setOrigin("QtWebSocket_Client");
+        wsSocket->connectToHost(host, port);
+    }
+    dialog->deleteLater();
 }
 
 void Client::disconnectSocket()

@@ -21,7 +21,10 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 #define CLIENT_H
 
 #include <QWidget>
+#include <QUrl>
+#include <QPointer>
 #include "QWsSocket.h"
+#include "MultiInputDialog.h"
 
 namespace Ui {
 class Client;
@@ -36,6 +39,7 @@ public:
 	~Client();
 
 protected slots:
+    void connectAccepted();
 	void socketConnected();
 	void socketDisconnected();
 	void sendMessage();
@@ -51,6 +55,7 @@ protected:
 
 private:
 	Ui::Client* ui;
+    QPointer<MultiInputDialog> dialog;
 };
 
 #endif // CLIENT_H

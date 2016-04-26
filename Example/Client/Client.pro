@@ -16,11 +16,13 @@ DEPENDPATH += ../../QtWebsocket
 
 SOURCES += \
     main.cpp \
-    Client.cpp
+    Client.cpp \
+    MultiInputDialog.cpp
 
 HEADERS += \
     QWsSocket.h \
-    Client.h
+    Client.h \
+    MultiInputDialog.h
 
 FORMS += Client.ui
 
