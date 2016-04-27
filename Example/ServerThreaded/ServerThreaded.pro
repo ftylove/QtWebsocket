@@ -13,6 +13,12 @@ TEMPLATE = app
 INCLUDEPATH += ../../QtWebsocket
 DEPENDPATH += ../../QtWebsocket
 
+DESTDIR = ./
+OBJECTS_DIR = $${DESTDIR}/.obj
+MOC_DIR = $${DESTDIR}/.moc
+RCC_DIR = $${DESTDIR}/.rcc
+UI_DIR = $${DESTDIR}/.ui
+
 SOURCES += \
     main.cpp \
     ServerThreaded.cpp \

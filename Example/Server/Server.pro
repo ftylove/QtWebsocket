@@ -10,6 +10,12 @@ TARGET = Server
 CONFIG += console
 TEMPLATE = app
 
+DESTDIR = ./
+OBJECTS_DIR = $${DESTDIR}/.obj
+MOC_DIR = $${DESTDIR}/.moc
+RCC_DIR = $${DESTDIR}/.rcc
+UI_DIR = $${DESTDIR}/.ui
+
 DEPENDPATH += "../../QtWebsocket"
 SOURCES += \
     main.cpp \
