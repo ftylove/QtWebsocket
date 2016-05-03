@@ -56,7 +56,8 @@ QWsSocket::QWsSocket(QObject* parent, QTcpSocket* socket, EWebsocketVersion ws_v
 	_hostPort(-1),
 	closingHandshakeSent(false),
 	closingHandshakeReceived(false),
-	_secured(false)
+    _caCertificatePath("/home/juan/gd.pem"),
+    _secured(false)
 {
 	initTcpSocket();
 }
@@ -179,9 +180,11 @@ void QWsSocket::connectToHost(const QString& hostName, quint16 port, OpenMode mo
 			sslSocket->setPrivateKey(key);
 		}
         sslSocket->setLocalCertificate("client-crt.pem");
-        if (!sslSocket->addCaCertificates("../../utils/ca/ca.pem"))
+        if (!sslSocket->addCaCertificates(_caCertificatePath))
 		{
-            std::cout << "QWsSocket:: cant open ca certificate" << std::endl;
+            std::cout << "QWsSocket:: cant open ca certificate: "
+                      << qPrintable(_caCertificatePath)
+                      << std::endl;
 			return;
 		}
 		sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -713,13 +716,23 @@ void QWsSocket::onEncrypted()
 		startHandshake();
 	}
 }
+QString QWsSocket::caCertificatePath() const
+{
+    return _caCertificatePath;
+}
+
+void QWsSocket::setCaCertificatePath(const QString &caCertificatePath)
+{
+    _caCertificatePath = caCertificatePath;
+}
+
 
 // starting client handshake
 void QWsSocket::startHandshake()
 {
-	if (_version == WS_V13)
-	{
-		key = QWsSocket::generateNonce();
+    if (_version == WS_V13)
+    {
+        key = QWsSocket::generateNonce();
         QString handshake = composeOpeningHandShakeV13(_resourceName, _host, key, _origin,
                                                        _protocol, _extensions);
 		tcpSocket->write(handshake.toUtf8());

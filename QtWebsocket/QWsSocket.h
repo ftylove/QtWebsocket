@@ -127,6 +127,7 @@ private:
 	QString _origin;
 	QString _protocol;
 	QString _extensions;
+    QString _caCertificatePath;
 
 	bool closingHandshakeSent;
 	bool closingHandshakeReceived;
@@ -198,6 +199,8 @@ public:
 	static QRegExp regExpHttpRequest;
 	static QRegExp regExpHttpResponse;
 	static QRegExp regExpHttpField;
+    QString caCertificatePath() const;
+    void setCaCertificatePath(const QString &caCertificatePath);
 };
 
 } // namespace QtWebsocket
