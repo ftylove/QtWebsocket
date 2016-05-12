@@ -56,7 +56,7 @@ QWsSocket::QWsSocket(QObject* parent, QTcpSocket* socket, EWebsocketVersion ws_v
 	_hostPort(-1),
 	closingHandshakeSent(false),
 	closingHandshakeReceived(false),
-    _caCertificatePath("/home/juan/gd.pem"),
+    _caCertificatePath("/etc/zbp/ssl_certs/gd.pem"),
     _secured(false)
 {
 	initTcpSocket();
